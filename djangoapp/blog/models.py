@@ -5,7 +5,16 @@ from django.contrib.auth.models import User
 from django_summernote.models import AbstractAttachment
 from django.urls import reverse
 
+
 # Create your models here.
+
+
+class PostManager(models.Manager):
+    def get_published(self):
+        return self\
+            .filter(is_published=True)\
+            .order_by('-pk')
+    
 
 class Tag(models.Model):
     class Meta:
@@ -100,7 +109,9 @@ class PostAttachment(AbstractAttachment):
         super().save(*args, **kwargs)
 
 
+
 class Post(models.Model):
+    objects = PostManager()
     title = models.CharField(max_length=50)
     slug = models.SlugField(
         unique=True,
@@ -170,4 +181,6 @@ class Post(models.Model):
         if not self.is_published:
             return reverse('blog:index')
         return reverse('blog:post', args=(self.slug,))
+    
+
     

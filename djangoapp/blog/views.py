@@ -6,12 +6,7 @@ from blog.models import Post
 posts = list(range(1000))
 
 def index(request):
-    posts = (
-        Post
-        .objects
-        .filter(is_published=True)
-        .order_by('-pk')
-        )
+    posts = Post.objects.get_published() #type: ignore
 
     paginator = Paginator(posts, 9)
     page_number = request.GET.get("page")
@@ -36,12 +31,33 @@ def page(request):
     )
 
 def post(request, slug):
-    post = Post.objects.get(slug=slug)
-    print(post)
+    post = Post.objects.get_published().filter(slug=slug).first() #type: ignore
+
     return render(
         request,
         'blog/pages/post.html',
         {
             'post': post,
+        }
+    )
+
+def category(request, slug):
+    posts = Post.objects.get_published().filter(category__slug = slug) #type: ignore
+    return render(
+        request,
+        'blog/pages/index.html',
+        {
+            'page_obj': posts
+        }
+    )
+
+def created_by(request, author_pk):
+    posts = Post.objects.get_published().filter(created_by__pk = author_pk) #type: ignore
+
+    return render(
+        request,
+        'blog/pages/index.html',
+        {
+            'page_obj': posts
         }
     )
