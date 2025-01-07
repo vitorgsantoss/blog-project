@@ -1,6 +1,9 @@
 from django.db import models
 from util.rands import slugfy_new
+from util.image import resize_image
 from django.contrib.auth.models import User
+from django_summernote.models import AbstractAttachment
+from django.urls import reverse
 
 # Create your models here.
 
@@ -83,6 +86,20 @@ class Page(models.Model):
         return self.title
     
 
+class PostAttachment(AbstractAttachment):
+    def save(self, *args, **kwargs):
+        current_file_name = str(self.file.name)
+        super_save = super().save(*args, **kwargs)
+        file_changed = False
+
+        if self.file:
+            file_changed = current_file_name != self.file.name
+        
+        if file_changed:
+            resize_image(self.file, 900)
+        super().save(*args, **kwargs)
+
+
 class Post(models.Model):
     title = models.CharField(max_length=50)
     slug = models.SlugField(
@@ -135,5 +152,22 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             slug = slugfy_new(self.title, 8)
+        
+        current_cover_name = str(self.cover.name)
+        super_save = super().save(*args, **kwargs)
+        cover_changed = False
 
-        super().save(*args, **kwargs)
+        if self.cover:
+            cover_changed = current_cover_name != self.cover.name
+        
+        if cover_changed:
+            resize_image(self.cover, 900)
+        
+        return super_save
+    
+
+    def get_absolute_url(self):
+        if not self.is_published:
+            return reverse('blog:index')
+        return reverse('blog:post', args=(self.slug,))
+    
