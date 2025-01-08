@@ -46,7 +46,7 @@ class PostAdmin(SummernoteModelAdmin):
     summernote_fields = ('content',)
     list_display = 'id','title', 'slug', 'created_by', 'is_published', 'cover_in_post_content',
     list_display_links = 'title',
-    search_fields = 'id', 'title', 'slug', 'excerpt', 'content', ''
+    search_fields = 'id', 'title', 'slug', 'excerpt', 'content',
     list_editable = 'is_published', 'cover_in_post_content',
     list_per_page = 50
     orderin = '-id',

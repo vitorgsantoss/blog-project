@@ -8,12 +8,6 @@ from django.urls import reverse
 
 # Create your models here.
 
-
-class PostManager(models.Manager):
-    def get_published(self):
-        return self\
-            .filter(is_published=True)\
-            .order_by('-pk')
     
 
 class Tag(models.Model):
@@ -111,7 +105,6 @@ class PostAttachment(AbstractAttachment):
 
 
 class Post(models.Model):
-    objects = PostManager()
     title = models.CharField(max_length=50)
     slug = models.SlugField(
         unique=True,
