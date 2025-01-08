@@ -59,6 +59,11 @@ class Category(models.Model):
     
 
 class Page(models.Model):
+    def get_absolute_url(self):
+        if not self.is_published:
+            return reverse('blog:index')
+        return reverse('blog:page')
+    
     class Meta:
         verbose_name = 'Page'
         verbose_name_plural = 'Pages'
