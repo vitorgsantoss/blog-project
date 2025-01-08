@@ -41,6 +41,19 @@ def post(request, slug):
         }
     )
 
+
+def created_by(request, author_pk):
+    posts = Post.objects.get_published().filter(created_by__pk = author_pk) #type: ignore
+
+    return render(
+        request,
+        'blog/pages/index.html',
+        {
+            'page_obj': posts
+        }
+    )
+
+
 def category(request, slug):
     posts = Post.objects.get_published().filter(category__slug = slug) #type: ignore
     return render(
@@ -51,9 +64,9 @@ def category(request, slug):
         }
     )
 
-def created_by(request, author_pk):
-    posts = Post.objects.get_published().filter(created_by__pk = author_pk) #type: ignore
 
+def tag(request, slug):
+    posts = Post.objects.get_published().filter(tags__slug = slug) #type: ignore
     return render(
         request,
         'blog/pages/index.html',
