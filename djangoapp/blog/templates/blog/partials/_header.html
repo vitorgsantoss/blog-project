@@ -3,13 +3,11 @@
     <div class="section-gap">
 
       <h1 class="blog-title center pb-base">
-        <a class="blog-link" href="/"> {{setup.title}} </a>
+        <a class="blog-link" href="/">{{ setup.title }}</a>
       </h1>
       
       {% if setup.show_description %}
-        <p class="blog-description pb-base center">
-          {{setup.description}}
-        </p>
+        <p class="blog-description pb-base center">{{ setup.description }}</p>
       {% endif %}
 
       {% if setup.show_search %}
@@ -23,7 +21,8 @@
                 name="search"
                 id="search-input"
                 placeholder="Search"
-                value="Non risu potius quam oratione eiciendum? Quo pleb "
+                value="{{ search_value }}"
+                required
               >
               <button class="search-btn" type="submit" aria-labelledby="search-label">
                 <i class="fa fa-search"></i>
@@ -36,24 +35,19 @@
       {% if setup.show_menu %}
         <nav class="menu">
           <ul class="menu-items">
-            <li class="menu-item">
-
-              {% for link in setup.menulink_set.all %}
-              
+            {% for link in setup.menu.all %}
+              <li class="menu-item">
                 {% if link.new_tab %}
-                  <a class="menu-link" href="{{link.url_or_path}}" target="_blank">
+                  <a target="_blank" class="menu-link" href="{{ link.url_or_path }}">
                     {{ link.text }}
                   </a>
-                
-                {% else %}
-                  <a class="menu-link" href="{{link.url_or_path}}">
+              {% else %}
+                  <a class="menu-link" href="{{ link.url_or_path }}">
                     {{ link.text }}
                   </a>
-                
                 {% endif %}
-
-              {% endfor %}
-            </li>      
+              </li>
+            {% endfor %}
           </ul>
         </nav>
       {% endif %}
