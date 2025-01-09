@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from blog.models import Post,Page
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpRequest
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.models import User
 
@@ -96,6 +96,30 @@ class TagListView(PostListView):
         return context
 
 
+class SearchListView(PostListView):
+    def setup(self, request: HttpRequest, *args: Any, **kwargs: Any) -> None:
+        self.search_value = request.GET.get('search', '').strip()
+        return super().setup(request, *args, **kwargs)
+
+    def get_queryset(self) -> QuerySet[Any]:
+        q = super().get_queryset().filter(
+            Q(title__icontains = self.search_value) |
+            Q(excerpt__icontains = self.search_value) |
+            Q(created_by__first_name__icontains = self.search_value) |
+            Q(created_by__last_name__icontains = self.search_value) |
+            Q(category__name__icontains = self.search_value) |
+            Q(tags__name__icontains = self.search_value))
+        return q
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'page_title': f'{self.search_value} - '
+        })
+
+        return context
+
+
 class PageDetailView(DetailView):
     model = Page
     template_name = 'blog/pages/page.html'
@@ -117,72 +141,22 @@ class PageDetailView(DetailView):
         return context
 
 
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'blog/pages/post.html'
+    slug_field = 'slug'
+    context_object_name = 'post'
 
-# def page(request):
-#     page_obj = Page.objects.filter(
-#         is_published = True
-#     ).first()
-
-#     title = page_obj.title #type: ignore
-#     page_title = f'{title[:50]} - '
-
-#     return render(
-#         request,
-#         'blog/pages/page.html',
-#         {
-#             'page_obj': page_obj,
-#             'page_title': page_title,
-#         }
-#     )
-
-
-def post(request, slug):
-    post_obj = Post.objects.filter(
-        is_published = True
-        ).filter(slug=slug).first()
+    def get_queryset(self) -> QuerySet[Any]:
+        print(super().get_queryset())
+        return super().get_queryset().filter(is_published = True)
     
-    post_title = post_obj.title #type: ignore
-    page_title = f'{post_title[:50]} - '
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        page = self.get_object()
+        page_title = f'{page.title} - '#type:ignore
 
-    return render(
-        request,
-        'blog/pages/post.html',
-        {
-            'post': post_obj,
-            'page_title': page_title,
-        }
-    )
-
-
-def search(request):
-    search_value = request.GET.get('search', '').strip()
-    page_title = f'{search_value} - '
-
-    if search_value == '':
-        return redirect('blog:index')
-    
-    posts = Post.objects.filter(
-        is_published = True
-        ).filter(
-            Q(title__icontains = search_value) |
-            Q(excerpt__icontains = search_value) |
-            Q(created_by__first_name__icontains = search_value) |
-            Q(created_by__last_name__icontains = search_value) |
-            Q(category__name__icontains = search_value) |
-            Q(tags__name__icontains = search_value)
-
-        )
-    
-    paginator = Paginator(posts, PER_PAGE)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    
-    return render(
-        request,
-        'blog/pages/index.html',
-        {
-            'posts': page_obj,
-            'page_title': page_title,
-        }
-    )
+        context.update({
+            'page_title': page_title
+        })
+        return context
