@@ -74,6 +74,28 @@ class CategoryListView(PostListView):
         return context
 
 
+class TagListView(PostListView):
+    allow_empty = False
+
+    def get_queryset(self) -> QuerySet[Any]:
+        q = super().get_queryset()
+        q = q.filter(tags__slug = self.kwargs.get('slug'))
+        return q
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        slug = self.kwargs.get('slug')
+        query_set_tag = self.object_list[0].tags.filter(slug = slug)#type:ignore
+        tag_name = query_set_tag.first().name
+        page_title = f'Tag - {tag_name} - '
+        
+        context.update({
+            'page_title': page_title
+        })
+        return context
+
+
 def page(request):
     page_obj = Page.objects.filter(
         is_published = True
@@ -105,32 +127,6 @@ def post(request, slug):
         'blog/pages/post.html',
         {
             'post': post_obj,
-            'page_title': page_title,
-        }
-    )
-
-
-def tag(request, slug):
-    posts = Post.objects.filter(
-        is_published = True
-        ).filter(tags__slug = slug)
-    
-    
-    paginator = Paginator(posts, PER_PAGE)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    if len(page_obj) == 0:
-        raise Http404()
-    
-    post_tag = posts.first().tags.first().name #type: ignore
-    page_title = f'Tag - {post_tag} - '
-
-    return render(
-        request,
-        'blog/pages/index.html',
-        {
-            'page_obj': page_obj,
             'page_title': page_title,
         }
     )
