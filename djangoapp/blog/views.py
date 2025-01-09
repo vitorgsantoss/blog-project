@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from blog.models import Post,Page
 from django.db.models import Q
 from django.http import Http404
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.contrib.auth.models import User
 
 # Create your views here.
@@ -96,22 +96,44 @@ class TagListView(PostListView):
         return context
 
 
-def page(request):
-    page_obj = Page.objects.filter(
-        is_published = True
-    ).first()
+class PageDetailView(DetailView):
+    model = Page
+    template_name = 'blog/pages/page.html'
+    slug_field = 'slug'
+    context_object_name = 'page'
 
-    title = page_obj.title #type: ignore
-    page_title = f'{title[:50]} - '
+    def get_queryset(self) -> QuerySet[Any]:
+        print(super().get_queryset())
+        return super().get_queryset().filter(is_published = True)
+    
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        page = self.get_object()
+        page_title = f'{page.title} - '#type:ignore
 
-    return render(
-        request,
-        'blog/pages/page.html',
-        {
-            'page_obj': page_obj,
-            'page_title': page_title,
-        }
-    )
+        context.update({
+            'page_title': page_title
+        })
+        return context
+
+
+
+# def page(request):
+#     page_obj = Page.objects.filter(
+#         is_published = True
+#     ).first()
+
+#     title = page_obj.title #type: ignore
+#     page_title = f'{title[:50]} - '
+
+#     return render(
+#         request,
+#         'blog/pages/page.html',
+#         {
+#             'page_obj': page_obj,
+#             'page_title': page_title,
+#         }
+#     )
 
 
 def post(request, slug):
@@ -160,7 +182,7 @@ def search(request):
         request,
         'blog/pages/index.html',
         {
-            'page_obj': page_obj,
+            'posts': page_obj,
             'page_title': page_title,
         }
     )
