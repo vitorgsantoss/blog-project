@@ -53,6 +53,25 @@ class CreatedByListView(PostListView):
         q =  super().get_queryset()
         q = q.filter(created_by__pk = self.kwargs.get('author_pk'))
         return q
+    
+
+class CategoryListView(PostListView):
+    allow_empty = False
+
+    def get_queryset(self) -> QuerySet[Any]:
+        q = super().get_queryset()
+        q = q.filter(category__slug = self.kwargs.get('slug'))
+        return q
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_name = self.object_list[0].category.name#type:ignore
+        page_title = f'Categoria - {category_name} - '
+        
+        context.update({
+            'page_title': page_title
+        })
+        return context
 
 
 def page(request):
@@ -86,31 +105,6 @@ def post(request, slug):
         'blog/pages/post.html',
         {
             'post': post_obj,
-            'page_title': page_title,
-        }
-    )
-
-
-def category(request, slug):
-    posts = Post.objects.filter(
-        is_published = True
-        ).filter(category__slug = slug)
-
-    paginator = Paginator(posts, PER_PAGE)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    if len(page_obj) == 0:
-        raise Http404()
-
-    post_category = posts.first().category.name #type: ignore
-    page_title = f'Categoria - {post_category} - '
-    
-    return render(
-        request,
-        'blog/pages/index.html',
-        {
-            'page_obj': page_obj,
             'page_title': page_title,
         }
     )
