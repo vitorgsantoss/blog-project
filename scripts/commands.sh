@@ -6,4 +6,5 @@ set -e
 wait_psql.sh
 collectstatic.sh
 migrate.sh
+create_posts.sh
 runserver.sh

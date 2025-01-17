@@ -58,12 +58,7 @@ class Category(models.Model):
         return self.name
     
 
-class Page(models.Model):
-    def get_absolute_url(self):
-        if not self.is_published:
-            return reverse('blog:index')
-        return reverse('blog:page')
-    
+class Page(models.Model):    
     class Meta:
         verbose_name = 'Page'
         verbose_name_plural = 'Pages'
@@ -92,6 +87,11 @@ class Page(models.Model):
     
     def __str__(self):
         return self.title
+    
+    def get_absolute_url(self):
+        if not self.is_published:
+            return reverse('blog:index')
+        return reverse('blog:page', args=(self.slug,))
     
 
 class PostAttachment(AbstractAttachment):
