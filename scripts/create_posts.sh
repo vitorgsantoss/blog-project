@@ -6,6 +6,7 @@ COMMAND="
 from django.utils.timezone import now
 from django.contrib.auth.models import User
 from blog.models import Post, Page
+from site_setup.models import SiteSetup, MenuLink
 from django.core.files import File
 
 # Verificar se já existem posts
@@ -55,14 +56,38 @@ else:
 
     print('Posts criados com sucesso.')
 
-    if not Page.objects.filter(title = 'Blog Project').exists():
-        about_us = Page()
-        about_us.title= 'Blog Project'
-        about_us.slug= 'blog-project'
-        about_us.is_published= True
-        about_us.content= 'Este projeto é um exemplo de aplicação web desenvolvido com Django visando estudos e práticas de desenvolvimento web. Ele utiliza Docker para facilitar a configuração e o deploy do ambiente, permitindo que o projeto seja facilmente replicável. A aplicação simula um blog básico, onde é possível gerenciar e visualizar posts.'
-        about_us.save()
-        
+if not Page.objects.filter(title = 'Blog Project').exists():
+    about_us = Page()
+    about_us.title= 'Blog Project'
+    about_us.slug= 'blog-project'
+    about_us.is_published= True
+    about_us.content= 'Este projeto é um exemplo de aplicação web desenvolvido com Django visando estudos e práticas de desenvolvimento web. Ele utiliza Docker para facilitar a configuração e o deploy do ambiente, permitindo que o projeto seja facilmente replicável. A aplicação simula um blog básico, onde é possível gerenciar e visualizar posts.'
+    about_us.save()
+
+if not SiteSetup.objects.first():
+    
+    setup = SiteSetup()
+    setup.title = 'Blog Project'
+    setup.description = 'Blog criado com o intuito de estudar tecnologias como Django, PostgreSQL e Docker'
+    setup.show_header = True
+    setup.show_search = True
+    setup.show_menu = True
+    setup.show_description = True
+    setup.show_pagination = True
+    setup.show_footer = True
+    setup.save()
+
+    link1 = MenuLink()
+    link1.text = 'Home'
+    link1.url_or_path = 'http://127.0.0.1:8000/'
+    link1.site_setup = setup
+    link1.save()
+
+    link2 = MenuLink()
+    link2.text = 'About Us'
+    link2.url_or_path = 'http://127.0.0.1:8000/page/blog-project/'
+    link2.site_setup = setup
+    link2.save()
 "
 
 # Executar o comando no shell do Django
