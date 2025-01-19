@@ -12,8 +12,13 @@ from django.core.files import File
 if Post.objects.exists():
     print('Posts já existem no banco de dados. Nenhuma ação necessária.')
 else:
-    # Usuário responsável pela criação (substitua pelo ID ou lógica do seu projeto)
-    user = User.objects.first()  # Alterar se necessário para selecionar o usuário correto
+    if not User.objects.filter(username = 'ChatGPT').exists():
+        chatgpt = User()
+        chatgpt.username = 'ChatGPT'
+        chatgpt.first_name = 'ChatGPT'
+        chatgpt.save()
+
+    user = User.objects.get(username = 'ChatGPT')
     if not user:
         print('Nenhum usuário encontrado para associar aos posts.')
         exit(1)
@@ -50,15 +55,13 @@ else:
 
     print('Posts criados com sucesso.')
 
-    try:
+    if not Page.objects.filter(title = 'Blog Project').exists():
         about_us = Page()
         about_us.title= 'Blog Project'
         about_us.slug= 'blog-project'
         about_us.is_published= True
         about_us.content= 'Este projeto é um exemplo de aplicação web desenvolvido com Django visando estudos e práticas de desenvolvimento web. Ele utiliza Docker para facilitar a configuração e o deploy do ambiente, permitindo que o projeto seja facilmente replicável. A aplicação simula um blog básico, onde é possível gerenciar e visualizar posts.'
         about_us.save()
-    except Exception as e:
-        raise Exception(f'Ocorreu um erro durante a criação da Page: {e}')
         
 "
 
